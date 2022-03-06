@@ -1,0 +1,73 @@
+// Author: Zoey Lu
+// Title: Shader 2
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+uniform float u_time;
+
+vec2 createGrid( in vec2 st, in vec2 gridsize, out vec2 index ){
+    st *= gridsize;
+    index = floor(st);
+    st = fract(st);
+    
+    return st;
+}
+
+//modified based on book of shader https://thebookofshaders.com/glossary/?search=dot
+float createCircle(vec2 _st, vec2 pos, float _radius){
+    vec2 dist = _st-pos;
+	return 1.-smoothstep(_radius-(_radius*0.01),
+                         _radius+(_radius*0.01),
+                         dot(dist,dist)*4.104);
+}
+
+
+void main() {
+    
+    vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    st.x *= u_resolution.x/u_resolution.y;
+  
+    //crearte grid
+    vec2 gridIndex;
+    vec2 gridSt = createGrid(st, vec2(7., 7.), gridIndex);
+	
+    //default color
+    vec3 color = vec3(0.0);
+
+	//shift odd columns
+    if( mod(gridIndex.x, 2.0)==0.){
+        gridSt.y += 0.5;
+    }
+        
+	//different patterns and movements
+    if( mod(gridIndex.y, 2.0)==1.0 && mod(gridIndex.x, 2.0)==1.0)
+    {
+        gridSt.x += sin(u_time) * 0.5;
+    	color = vec3(createCircle(gridSt,vec2(0.5),0.3));
+    } 
+    else if( mod(gridIndex.y, 2.0)==1.0)
+    {
+        gridSt.y += sin(u_time) * 0.5;
+        color = vec3(1.-createCircle(gridSt,vec2(0.5),0.89));
+    }
+    else if( mod(gridIndex.x, 2.0)==1.0)
+    {
+        gridSt.x -= sin(u_time) * 0.5;
+        color = vec3(1.-createCircle(gridSt,vec2(0.5),0.1));
+    } 
+    else 
+    {
+        gridSt.y -= sin(u_time) * 0.5;
+        color = vec3(createCircle(gridSt,vec2(0.5),0.5));
+    }
+
+    //add layer
+    float layer = createCircle( st, vec2(0.5), (abs(sin(u_time*3.))));
+    color *= mix( color, vec3(0.995,0.695,0.118), layer);
+    
+    gl_FragColor = vec4(color,1.0);
+}
