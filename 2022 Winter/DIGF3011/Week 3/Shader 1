@@ -11,7 +11,7 @@ uniform float u_time;
 
 
 //draw circle function
-//from book of shader https://thebookofshaders.com/glossary/?search=dot
+//modified based on book of shader https://thebookofshaders.com/glossary/?search=dot
 float circle(vec2 _st, vec2 pos, float _radius){
     vec2 dist = _st-pos;
 	return 1.-smoothstep(_radius-(_radius*0.01),
